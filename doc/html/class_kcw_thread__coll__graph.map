@@ -1,5 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node2" href="$class_kcw_event_loop.html" title="KcwEventLoop is the event loop base class which handles the event distribution." alt="" coords="187,101,293,131"/>
-<area shape="rect" id="node4" href="$class_kcw_shared_memory.html" title="KcwSharedMemory\&lt; int \&gt;" alt="" coords="5,5,179,35"/>
-<area shape="rect" id="node6" href="$class_kcw_thread_rep.html" title="a simple thread representation" alt="" coords="317,101,427,131"/>
-</map>

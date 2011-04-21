@@ -1,4 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$class_kcw_app.html" title="KcwApp is the Application class which handles the Event distribution and the event loop..." alt="" coords="5,83,75,112"/>
-<area shape="rect" id="node5" href="$class_kcw_thread.html" title="This class is supposed to wrap thread handling." alt="" coords="99,83,184,112"/>
-</map>
