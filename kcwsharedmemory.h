@@ -234,7 +234,7 @@ int KcwSharedMemory<T>::size() const {
 
 template<typename T>
 bool KcwSharedMemory<T>::opened() const {
-    return (m_size == 0);
+    return (m_size != 0);
 }
 
 template<typename T>
