@@ -14,6 +14,7 @@ int main(int argc, char ** argv) {
     test2.open(L"sharedmemorytest");
     KcwTestAssert(test1.size() == 123, L"created shared memory segment has wrong size");
     KcwTestAssert(test1.size() == 123, L"opened shared memory segment has wrong size");
+    KcwTestAssert(test1.opened() == true, L"shared memory segment is not opened!");
 
     CopyMemory(test1.data(), "This is a very long string, long enough to be bigger than 123 characters (some characters"
                              " more than the size of the shared memory segment!).", 123);
@@ -30,7 +31,13 @@ int main(int argc, char ** argv) {
     
     test3.create(L"sharedmemorytest-int", 10);
     test4.open(L"sharedmemorytest-int");
+    KcwTestAssert(test3.opened() == true, L"shared memory segment is not opened!");
+    KcwTestAssert(test4.opened() == true, L"shared memory segment is not opened!");
     for(int i = 0; i < 10; i++) test3[i] = i;
     for(int i = 0; i < 10; i++) KcwTestAssert((test4[i] == i), L"indexes don't work correctly");
+
+    KcwSharedMemory<int> test5;
+    test5.open(L"sharedmemorytest-fail");
+    KcwTestAssert(test5.opened() == false, L"shared memory segment exists even though it shouldn't!");
     return 0;
 }
