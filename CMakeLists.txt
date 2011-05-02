@@ -18,6 +18,7 @@ set(kcw_HDRS
     kcwinjector.h
     kcwpluginloader.h
     kcwprocess.h
+    kcwsharedmemory.h
     kcwthread.h
     kcwthreadrep.h
 )
