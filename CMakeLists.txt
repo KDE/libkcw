@@ -16,6 +16,7 @@ set(kcw_HDRS
     kcwdebug.h
     kcweventloop.h
     kcwinjector.h
+    kcwpluginloader.h
     kcwprocess.h
     kcwthread.h
     kcwthreadrep.h
@@ -26,6 +27,7 @@ set(kcw_SRCS
     kcwdebug.cpp
     kcweventloop.cpp
     kcwinjector.cpp
+    kcwpluginloader.cpp
     kcwprocess.cpp
     kcwthread.cpp
     kcwthreadrep.cpp

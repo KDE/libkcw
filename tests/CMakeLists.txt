@@ -14,3 +14,10 @@ add_test(sharedmemorytest sharedmemorytest)
 add_executable(injectortest injectortest.cpp)
 target_link_libraries(injectortest kcw)
 add_test(injectortest injectortest)
+
+add_library(testplugin MODULE testplugin.cpp)
+target_link_libraries(testplugin kcw)
+
+add_executable(pluginloadertest pluginloadertest.cpp)
+target_link_libraries(pluginloadertest kcw)
+add_test(pluginloadertest pluginloadertest)
