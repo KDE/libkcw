@@ -1,6 +1,8 @@
 #ifndef kcwdebug_h
 #define kcwdebug_h
 
+#include <windows.h>
+
 #include <sstream>
 #include <string>
 #include <locale>
