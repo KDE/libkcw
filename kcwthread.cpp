@@ -27,11 +27,11 @@ void KcwThread::start() {
 // a static helper function that is called by the operating system
 DWORD WINAPI KcwThread::monitorThreadStatic(LPVOID lpParameter) {
     if(lpParameter == 0) {
-        KcwDebug() << "monitorThreadStatic called with argument:" << lpParameter;
+//        KcwDebug() << "monitorThreadStatic called with argument:" << lpParameter;
         return 0;
     }
     KcwThread* pKcwThread = reinterpret_cast<KcwThread*>(lpParameter);
-    KcwDebug() << "monitorThreadStatic called with argument:" << pKcwThread;
+//    KcwDebug() << "monitorThreadStatic called with argument:" << pKcwThread;
 
     const unsigned ret = pKcwThread->monitorThread();
     return ret;
@@ -75,6 +75,6 @@ int KcwThread::getUniqueCounter() {
     }
 
     // increase the counter by one, currently this is still not thread save
-    KcwDebug() << "opening global thread number" << *s_globalThreadCounter;
+//    KcwDebug() << "opening global thread number" << *s_globalThreadCounter;
     return (*s_globalThreadCounter)++;
 }

@@ -30,7 +30,7 @@ KcwEventLoop::~KcwEventLoop() {
 
 void KcwEventLoop::addCallback(HANDLE hndl, HANDLE event) {
     EnterCriticalSection(&m_criticalSection);
-    KcwDebug() << "add event handle #" << (m_handles.size() + 1) <<  L"in eventLoop" << m_eventLoopId << L"value:" << hndl;
+//    KcwDebug() << "add event handle #" << (m_handles.size() + 1) <<  L"in eventLoop" << m_eventLoopId << L"value:" << hndl;
     m_handles.push_back(hndl);
     m_objects.push_back(event);
     m_callbacks.push_back(handleCallback);
@@ -39,7 +39,7 @@ void KcwEventLoop::addCallback(HANDLE hndl, HANDLE event) {
 
 void KcwEventLoop::addCallback(HANDLE hndl, eventCallback cllbck, void *callbackObject) {
     EnterCriticalSection(&m_criticalSection);
-    KcwDebug() << "add callback handle #" << (m_handles.size() + 1) <<  L"in eventLoop" << m_eventLoopId << L"value:" << hndl;
+//    KcwDebug() << "add callback handle #" << (m_handles.size() + 1) <<  L"in eventLoop" << m_eventLoopId << L"value:" << hndl;
     m_handles.push_back(hndl);
     m_objects.push_back(callbackObject);
     m_callbacks.push_back(cllbck);
@@ -48,14 +48,14 @@ void KcwEventLoop::addCallback(HANDLE hndl, eventCallback cllbck, void *callback
 
 void KcwEventLoop::quit() {
     DWORD dwProcessId = ::GetCurrentProcessId();
-    KcwDebug() << "quit was called in process" << dwProcessId;
+//    KcwDebug() << "quit was called in process" << dwProcessId;
     EnterCriticalSection(&m_criticalSection);
     SetEvent(m_eventHandle);
     LeaveCriticalSection(&m_criticalSection);
 }
 
 void KcwEventLoop::setRefreshInterval(int secs) {
-    KcwDebug() << "setting refresh interval";
+//    KcwDebug() << "setting refresh interval";
     EnterCriticalSection(&m_criticalSection);
     m_refreshInterval = secs;
     LeaveCriticalSection(&m_criticalSection);
@@ -66,7 +66,7 @@ int KcwEventLoop::refreshInterval() const {
 }
 
 void KcwEventLoop::setExitEvent(HANDLE event) {
-    KcwDebug() << "setting exit event";
+//    KcwDebug() << "setting exit event";
     EnterCriticalSection(&m_criticalSection);
     m_eventHandle = event;
     m_handles.at(0) = event;
@@ -120,15 +120,15 @@ int KcwEventLoop::exec() {
         for(int i = 0; i < handleSize; i++) {
             if(dwWaitRes == WAIT_OBJECT_0 + i) {
                 if(m_callbacks[i] != NULL) {
-                    KcwDebug() << "calling callback for event #" << i << "in eventloop #" << m_eventLoopId << "of process" << dwProcessId;
+//                    KcwDebug() << "calling callback for event #" << i << "in eventloop #" << m_eventLoopId << "of process" << dwProcessId;
                     eventCallback callback = m_callbacks[i];
                     void *arg = m_objects[i];
                     LeaveCriticalSection(&m_criticalSection);
-                    KcwDebug() << "argument:" << arg;
+//                    KcwDebug() << "argument:" << arg;
                     callback(arg);
                     EnterCriticalSection(&m_criticalSection);
                 } else {
-                    KcwDebug() << "calling quit for event #" << i << "in process" << dwProcessId;
+//                    KcwDebug() << "calling quit for event #" << i << "in process" << dwProcessId;
                     LeaveCriticalSection(&m_criticalSection);
                     quit();
                     EnterCriticalSection(&m_criticalSection);
@@ -158,6 +158,6 @@ int KcwEventLoop::getUniqueCounter() {
     }
 
     // increase the counter by one, currently this is still not thread save
-    KcwDebug() << "opening global eventLoop number" << *s_globalEventLoopCounter;
+//    KcwDebug() << "opening global eventLoop number" << *s_globalEventLoopCounter;
     return (*s_globalEventLoopCounter)++;
 }
