@@ -55,4 +55,7 @@ if(BUILD_DOCS)
 	endif(DOXYGEN_FOUND)
 	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs/html DESTINATION doc/kcw COMPONENT doc)
 endif(BUILD_DOCS)
+
+if(BUILD_TESTS)
 add_subdirectory(tests)
+endif(BUILD_TESTS)
