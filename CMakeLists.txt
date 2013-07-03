@@ -7,6 +7,10 @@ option(BUILD_DOCS "build documentation" OFF)
 
 add_definitions(-DUNICODE)
 
+set(KCW_MAJOR_VERSION 0)
+set(KCW_MINOR_VERSION 1)
+set(KCW_PATCH_VERSION 0)
+
 if(BUILD_TESTS)
     enable_testing()
 endif(BUILD_TESTS)
