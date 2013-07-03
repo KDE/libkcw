@@ -11,6 +11,17 @@ set(KCW_MAJOR_VERSION 0)
 set(KCW_MINOR_VERSION 1)
 set(KCW_PATCH_VERSION 0)
 
+set(KCW_VERSION "${KCW_MAJOR_VERSION}.${KCW_MINOR_VERSION}.${KCW_PATCH_VERSION}")
+
+configure_file(cmake/KcwConfigVersion.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/KcwConfigVersion.cmake" @ONLY)
+
+# Install the KcwConfig.cmake and KcwConfigVersion.cmake
+install(FILES
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/KcwConfig.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/KcwConfigVersion.cmake"
+  DESTINATION lib/cmake/kcw COMPONENT dev)
+
 if(BUILD_TESTS)
     enable_testing()
 endif(BUILD_TESTS)
@@ -40,7 +51,8 @@ set(kcw_SRCS
 
 add_library(kcw STATIC ${kcw_SRCS})
 
-install(TARGETS kcw RUNTIME DESTINATION bin
+install(TARGETS kcw EXPORT KcwTargets
+                    RUNTIME DESTINATION bin
                     LIBRARY DESTINATION lib
                     ARCHIVE DESTINATION lib COMPONENT devel)
 
@@ -63,3 +75,8 @@ endif(BUILD_DOCS)
 if(BUILD_TESTS)
 add_subdirectory(tests)
 endif(BUILD_TESTS)
+
+export(TARGETS kcw FILE "${CMAKE_CURRENT_BINARY_DIR}/KcwTargets.cmake")
+export(PACKAGE kcw)
+
+install(EXPORT KcwTargets DESTINATION lib/cmake/kcw COMPONENT devel)
