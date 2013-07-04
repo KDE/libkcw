@@ -15,11 +15,11 @@ KcwEventLoop::KcwEventLoop(HANDLE eventHandle)
     // the event handle is used to signal that this eventloop should simply close itself.
     if(eventHandle != NULL) {
         m_eventHandle = eventHandle;
-        KcwDebug() << "using a different event handle";
+//         KcwDebug() << "using a different event handle";
     } else {
         WCHAR tmp[1024];
         wsprintf(tmp, L"KcwEventLoop-%i", m_eventLoopId);
-        KcwDebug() << "using eventLoop event:" << (const wchar_t*)tmp;
+//         KcwDebug() << "using eventLoop event:" << (const wchar_t*)tmp;
         m_eventHandle = ::CreateEvent(NULL, FALSE, FALSE, tmp);
     }
 
