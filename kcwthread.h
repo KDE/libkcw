@@ -3,7 +3,6 @@
 
 #include <windows.h>
 
-#include "kcwsharedmemory.h"
 #include "kcweventloop.h"
 #include "kcwthreadrep.h"
 
@@ -46,9 +45,6 @@ class KcwThread : public KcwEventLoop, public KcwThreadRep {
     private:
         static DWORD WINAPI monitorThreadStatic(LPVOID lpParameter);
         DWORD monitorThread();
-
-        static int getUniqueCounter();
-        static KcwSharedMemory<int> s_globalThreadCounter;
 
         HANDLE m_thread;
 };
