@@ -11,10 +11,6 @@ KcwSharedMemory<int> KcwThread::s_globalThreadCounter;
 KcwThread::KcwThread(HANDLE exitEventHandle) : KcwEventLoop() {
     if(exitEventHandle != NULL) {
         setExitEvent(exitEventHandle);
-    } else {
-        WCHAR tmp[1024];
-        wsprintf(tmp, L"KcwThread-%i", getUniqueCounter());
-        setExitEvent(::CreateEvent(NULL, FALSE, FALSE, tmp));
     }
     m_thread = ::CreateThread(NULL, 0, monitorThreadStatic, reinterpret_cast<void*>(this), CREATE_SUSPENDED, NULL);
 }
@@ -41,24 +37,13 @@ DWORD WINAPI KcwThread::monitorThreadStatic(LPVOID lpParameter) {
 DWORD KcwThread::monitorThread() {
     DWORD dwThreadResult = 0;
     dwThreadResult = run();
-    SetEvent(m_exitEvent);
+    KcwEventLoop::quit();
     return dwThreadResult;
 }
 
 // this is the default implementation
 DWORD KcwThread::run() {
     return KcwEventLoop::exec();
-}
-
-// return the exitEvent
-HANDLE KcwThread::exitEvent() {
-    return m_exitEvent;
-}
-
-// set the exitEvent so we can reuse an external event
-void KcwThread::setExitEvent(HANDLE exitEventHandle) {
-    KcwEventLoop::setExitEvent(exitEventHandle);
-    m_exitEvent = exitEventHandle;
 }
 
 int KcwThread::getUniqueCounter() {

@@ -9,7 +9,7 @@
 
 /**
 * @author Patrick Spendrin
-* @date 2011
+* @date 2011-2013
 *
 * @brief This class is supposed to wrap thread handling.
 *
@@ -43,17 +43,6 @@ class KcwThread : public KcwEventLoop, public KcwThreadRep {
         */
         virtual DWORD run();
 
-        /**
-        * this function returns the handle used for signaling the exitEvent. Since
-        * currently there is no threadsave implementation available for signaling the
-        * exitEvent, you should use this getter instead.
-        */
-        virtual HANDLE exitEvent();
-
-        /**
-        * this function sets the exitEvent handle
-        */
-        void setExitEvent(HANDLE exitEventHandle);
     private:
         static DWORD WINAPI monitorThreadStatic(LPVOID lpParameter);
         DWORD monitorThread();
@@ -62,6 +51,5 @@ class KcwThread : public KcwEventLoop, public KcwThreadRep {
         static KcwSharedMemory<int> s_globalThreadCounter;
 
         HANDLE m_thread;
-        HANDLE m_exitEvent;
 };
 #endif /* kcwthread_h */
