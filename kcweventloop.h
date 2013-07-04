@@ -10,7 +10,7 @@ template <typename T> class KcwSharedMemory;
 
 /**
 * @author Patrick Spendrin
-* @date 2011
+* @date 2011-2013
 *
 * @brief KcwEventLoop is the event loop base class which handles the event distribution.
 *
@@ -59,6 +59,11 @@ class KcwEventLoop {
         * returns the default event that is used to signal that the event loop should be quit.
         */
         virtual HANDLE exitEvent();
+
+        /**
+         * returns the event loop id
+         */
+        int eventLoopId() const;
 
     private:
         static void handleCallback(HANDLE obj);

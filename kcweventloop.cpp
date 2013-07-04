@@ -11,11 +11,15 @@ KcwEventLoop::KcwEventLoop(HANDLE eventHandle)
     m_eventLoopId(getUniqueCounter()) {
     InitializeCriticalSection(&m_criticalSection);
     EnterCriticalSection(&m_criticalSection);
+
+    // the event handle is used to signal that this eventloop should simply close itself.
     if(eventHandle != NULL) {
         m_eventHandle = eventHandle;
+        KcwDebug() << "using a different event handle";
     } else {
         WCHAR tmp[1024];
         wsprintf(tmp, L"KcwEventLoop-%i", m_eventLoopId);
+        KcwDebug() << "using eventLoop event:" << (const wchar_t*)tmp;
         m_eventHandle = ::CreateEvent(NULL, FALSE, FALSE, tmp);
     }
 
@@ -30,7 +34,7 @@ KcwEventLoop::~KcwEventLoop() {
 
 void KcwEventLoop::addCallback(HANDLE hndl, HANDLE event) {
     EnterCriticalSection(&m_criticalSection);
-//    KcwDebug() << "add event handle #" << (m_handles.size() + 1) <<  L"in eventLoop" << m_eventLoopId << L"value:" << hndl;
+//     KcwDebug() << "add event handle #" << (m_handles.size() + 1) <<  L"in eventLoop" << m_eventLoopId << L"value:" << hndl;
     m_handles.push_back(hndl);
     m_objects.push_back(event);
     m_callbacks.push_back(handleCallback);
@@ -39,7 +43,7 @@ void KcwEventLoop::addCallback(HANDLE hndl, HANDLE event) {
 
 void KcwEventLoop::addCallback(HANDLE hndl, eventCallback cllbck, void *callbackObject) {
     EnterCriticalSection(&m_criticalSection);
-//    KcwDebug() << "add callback handle #" << (m_handles.size() + 1) <<  L"in eventLoop" << m_eventLoopId << L"value:" << hndl;
+//     KcwDebug() << "add callback handle #" << (m_handles.size() + 1) <<  L"in eventLoop" << m_eventLoopId << L"value:" << hndl;
     m_handles.push_back(hndl);
     m_objects.push_back(callbackObject);
     m_callbacks.push_back(cllbck);
@@ -77,12 +81,16 @@ HANDLE KcwEventLoop::exitEvent() {
     return m_eventHandle;
 }
 
+int KcwEventLoop::eventLoopId() const {
+    return m_eventLoopId;
+}
 int KcwEventLoop::exec() {
     DWORD dwHandleInfo = 0, dwWaitRes = 0, dwProcessId = ::GetCurrentProcessId();
 
     std::vector<HANDLE> locHandles(m_handles);
     EnterCriticalSection(&m_criticalSection);
     const int handleSize = locHandles.size();
+//     KcwDebug() << "checking for #" << handleSize << " handles";
     for(int i = 0; i < handleSize; i++) {
         if(!GetHandleInformation(locHandles.at(i), &dwHandleInfo)) {
             KcwDebug() << "Handle #" << i << "is broken in process" << dwProcessId;
@@ -95,7 +103,7 @@ int KcwEventLoop::exec() {
     while ((dwWaitRes = ::WaitForMultipleObjects(handleSize, begin, FALSE, m_refreshInterval)) != WAIT_OBJECT_0) {
 //        LeaveCriticalSection(&m_criticalSection);
         if(dwWaitRes == WAIT_FAILED) {
-            WCHAR* lpMsgBuf = NULL;
+            WCHAR lpMsgBuf[1024];
             DWORD dw = GetLastError(); 
             FormatMessage(
                 FORMAT_MESSAGE_ALLOCATE_BUFFER | 
@@ -108,9 +116,7 @@ int KcwEventLoop::exec() {
                 0, NULL );
 
 //            EnterCriticalSection(&m_criticalSection);
-            KcwDebug() << "eventLoop wait failed!" << endl << "pid:" << dwProcessId << "#handles:" << locHandles.size() << "result:" << dwWaitRes << endl;
-            OutputDebugString(lpMsgBuf);
-            LocalFree(lpMsgBuf);
+            KcwDebug() << "eventLoop wait failed!" << endl << "pid:" << dwProcessId << "#handles:" << locHandles.size() << "result:" << dwWaitRes << (const wchar_t*)lpMsgBuf << endl;
             break;
         }
 
@@ -120,15 +126,15 @@ int KcwEventLoop::exec() {
         for(int i = 0; i < handleSize; i++) {
             if(dwWaitRes == WAIT_OBJECT_0 + i) {
                 if(m_callbacks[i] != NULL) {
-//                    KcwDebug() << "calling callback for event #" << i << "in eventloop #" << m_eventLoopId << "of process" << dwProcessId;
+//                     KcwDebug() << "calling callback for event #" << i << "in eventloop #" << m_eventLoopId << "of process" << dwProcessId;
                     eventCallback callback = m_callbacks[i];
                     void *arg = m_objects[i];
                     LeaveCriticalSection(&m_criticalSection);
-//                    KcwDebug() << "argument:" << arg;
+//                     KcwDebug() << "argument:" << arg;
                     callback(arg);
                     EnterCriticalSection(&m_criticalSection);
                 } else {
-//                    KcwDebug() << "calling quit for event #" << i << "in process" << dwProcessId;
+//                     KcwDebug() << "calling quit for event #" << i << "in eventloop #" << m_eventLoopId << "of process" << dwProcessId;
                     LeaveCriticalSection(&m_criticalSection);
                     quit();
                     EnterCriticalSection(&m_criticalSection);
