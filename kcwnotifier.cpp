@@ -17,10 +17,11 @@ KcwNotifier::~KcwNotifier() {
 
 int KcwNotifier::open() {
     int ret = -1;
-//     m_event = OpenEvent(SYNCHRONIZE | EVENT_MODIFY_STATE);
     m_event = OpenEvent(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, m_name.c_str());
     DWORD dw = GetLastError();
-    if(m_event  == NULL && dw == 2 /* access denied */) {
+
+    // in case the event doesn't exist yet, we get a file not found error, thus we try to create that event
+    if(m_event  == NULL && dw == 2 /* file not found */) {
         WCHAR* buf = NULL;
 
         FormatMessageW(
@@ -33,7 +34,7 @@ int KcwNotifier::open() {
             (WCHAR*)&buf,
             0, NULL );
 
-        KcwDebug() << "Last error when opening event:" << dw << "resulting error message:" << (const wchar_t*)buf;
+//         KcwDebug() << "Last error when opening event:" << dw << "resulting error message:" << (const wchar_t*)buf;
         LocalFree(buf);
 
         m_event = CreateEvent(NULL, FALSE, FALSE, m_name.c_str());
@@ -49,9 +50,8 @@ int KcwNotifier::open() {
                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                 (WCHAR*)&buf,
                 0, NULL );
-            KcwDebug() << "Last error when creating event:" << dw << "resulting error message:" << (const wchar_t*)buf;
+//             KcwDebug() << "Last error when creating event:" << dw << "resulting error message:" << (const wchar_t*)buf;
             LocalFree(buf);
-//             error handling takes place here
             exit(-1);
         }
     }
