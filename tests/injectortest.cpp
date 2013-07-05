@@ -24,7 +24,7 @@ int main(int argc, char**argv) {
     KcwSharedMemory<int> shmem;
     HANDLE timer = CreateWaitableTimer(NULL, FALSE, NULL);
     int retval;
-    
+
     injector2.setInjectionDll(getModulePath(NULL) + L"\\commoninjector.dll");
     KcwTestAssert((injector2.inject() == false), L"KcwInjector didn't fail when no process was set");
 
