@@ -113,6 +113,11 @@ class KcwProcess {
         */
         std::string executablePath() const;
 
+        /**
+         * @return the exitcode of the process after it finished
+         */
+        int exitCode() const;
+
     private:
         KcwThreadRep        m_threadRep;
         HANDLE              m_stdHandles[3];

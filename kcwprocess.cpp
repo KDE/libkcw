@@ -145,6 +145,15 @@ std::string KcwProcess::executablePath() const {
     return m_executablePath;
 }
 
+int KcwProcess::exitCode() const {
+    DWORD result = 0;
+    if(!GetExitCodeProcess(m_threadRep.processHandle(), &result)) {
+        return -1;
+    } else {
+        return result;
+    }
+}
+
 void KcwProcess::quit() {
     TerminateProcess(m_threadRep.processHandle(), 0);
 }
