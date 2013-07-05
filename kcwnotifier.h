@@ -14,12 +14,17 @@
 class KcwNotifier {
     public:
         KcwNotifier();
-        KcwNotifier(const std::wstring& strName, bool create = true);
+        KcwNotifier(const std::wstring& strName);
 
         ~KcwNotifier();
 
         /**
-         * opens an existing event or creates a new one
+         * opens an existing event or creates a new one.
+         */
+        int open();
+
+        /**
+         * opens an existing event or creates a new one.
          */
         int open(const std::wstring& strName);
 
@@ -29,12 +34,17 @@ class KcwNotifier {
         void close();
 
         /**
+         * returns true if the event is opened
+         */
+        bool opened() const;
+
+        /**
          * notify this event. As soon as this has been registered by an eventloop, this event is automatically reset.
          */
         void notify();
 
         /**
-         * returns the handle that needs to be added to the eventloops
+         * returns the handle that needs to be added to the eventloops.
          */
         HANDLE handle();
     private:

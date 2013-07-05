@@ -1,16 +1,26 @@
 #include "kcwnotifier.h"
 
-KcwNotifier::KcwNotifier() {
+KcwNotifier::KcwNotifier()
+: m_event(NULL) {
 }
 
-KcwNotifier::KcwNotifier(const std::wstring& strName, bool create) {
+KcwNotifier::KcwNotifier(const std::wstring& strName)
+: m_event(NULL) {
 }
 
 KcwNotifier::~KcwNotifier() {
 }
 
+int KcwNotifier::open() {
+    return -1;
+}
+
 int KcwNotifier::open(const std::wstring& strName) {
-    return 0;
+    return -1;
+}
+
+bool KcwNotifier::opened() const {
+    return m_event != NULL;
 }
 
 void KcwNotifier::close() {
