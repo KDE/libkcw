@@ -7,7 +7,7 @@
 
 /**
 * @author Patrick Spendrin
-* @date 2011
+* @date 2011-2013
 * @brief This class is used to abstract a shared memory object
 * @details Shared memory can be used for interprocess communication. For this purpose
 * a KcwSharedMemory object is created on both sides, on one of them create() is called,
@@ -19,6 +19,8 @@ class KcwSharedMemory {
     public:
         KcwSharedMemory();
         KcwSharedMemory(const std::wstring& strName, int size = 1, bool bCreate = true);
+
+        ~KcwSharedMemory();
 
         /**@{*/
         /**
@@ -36,6 +38,13 @@ class KcwSharedMemory {
         * went wrong.
         */
         inline int open(const std::wstring& strName);
+
+        /**
+         * closes this shared memory space. after that, the memory can be reopened with open.
+         * @return true in case the memory could be closed successfully and false in case something
+         * went wrong.
+         */
+        inline bool close();
         /**@}*/
 
         /**
@@ -121,42 +130,58 @@ KcwSharedMemory<T>::KcwSharedMemory(const std::wstring& strName, int size, bool 
 }
 
 template<typename T>
-void KcwSharedMemory<T>::errorExit() {
-    WCHAR* lpMsgBuf = NULL;
+KcwSharedMemory<T>::~KcwSharedMemory() {
     WCHAR buf[1024];
+    ZeroMemory(buf, 1024);
+
+    wsprintf(buf, L"deleting shared memory object %s", m_name.c_str());
+//     OutputDebugStringW(buf);
+    close();
+}
+
+template<typename T>
+bool KcwSharedMemory<T>::close() {
+    // not implemented yet
+    UnmapViewOfFile((LPCVOID)m_sharedMem);
+    CloseHandle(m_sharedMemHandle);
+    m_sharedMem = NULL;
+    m_sharedMemHandle = NULL;
+    m_size = 0;
+    return true;
+}
+
+template<typename T>
+void KcwSharedMemory<T>::errorExit() {
+    WCHAR buf[1024];
+    ZeroMemory(buf, 1024);
     DWORD dw = GetLastError();
 
-    FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER |
+    FormatMessageW(
         FORMAT_MESSAGE_FROM_SYSTEM |
         FORMAT_MESSAGE_IGNORE_INSERTS,
         NULL,
         dw,
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        lpMsgBuf,
+        buf,
         0, NULL );
 
-    wsprintf(buf, L"an error with id %i happened: %s", dw, lpMsgBuf);
-    OutputDebugString(buf);
-    LocalFree(lpMsgBuf);
+    wsprintf(buf, L"sharedMemory %s: an error with id %i happened: %s", m_name.c_str(), dw, buf);
+    OutputDebugStringW(buf);
     ExitProcess(dw);
 }
 
 template<typename T>
 int KcwSharedMemory<T>::create(const std::wstring& strName, int size) {
-    static SECURITY_ATTRIBUTES sa;
-    static SECURITY_ATTRIBUTES sa_event;
-
     m_name      = strName;
     m_size      = size;
 
     // if the file handle already is set, expect it to be set correctly and don't reopen it
     if(m_sharedMemHandle != NULL) return 0;
 
-    m_notificationEvent = ::CreateEvent(&sa_event, FALSE, FALSE, (m_name + L"_req_event").c_str());
+    m_notificationEvent = ::CreateEvent(NULL, FALSE, FALSE, (m_name + L"_req_event").c_str());
 
     m_sharedMemHandle = ::CreateFileMapping(INVALID_HANDLE_VALUE,
-                                            &sa,
+                                            NULL,
                                             PAGE_EXECUTE_READWRITE,
                                             0,
                                             m_size * sizeof(T) + sizeof(m_size),
