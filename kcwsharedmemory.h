@@ -63,19 +63,6 @@ class KcwSharedMemory {
         */
         inline T* data();
 
-        /**@{*/
-        /**
-        * notify the other sides of the shared memory segment. This function is normally used to signal
-        * that the contents of the shared memory has been changed.
-        */
-        inline void notify();
-
-        /**
-        * @return the event which is used to notify() the other side.
-        */
-        HANDLE notificationEvent() const;
-        /**@}*/
-
         /**
         * @return the size of this shared memory segment.
         */
@@ -93,7 +80,6 @@ class KcwSharedMemory {
         int         m_size;
         HANDLE      m_sharedMemHandle;
         T*          m_sharedMem;
-        HANDLE      m_notificationEvent;
 };
 
 /**
@@ -178,8 +164,6 @@ int KcwSharedMemory<T>::create(const std::wstring& strName, int size) {
     // if the file handle already is set, expect it to be set correctly and don't reopen it
     if(m_sharedMemHandle != NULL) return 0;
 
-    m_notificationEvent = ::CreateEvent(NULL, FALSE, FALSE, (m_name + L"_req_event").c_str());
-
     m_sharedMemHandle = ::CreateFileMapping(INVALID_HANDLE_VALUE,
                                             NULL,
                                             PAGE_EXECUTE_READWRITE,
@@ -210,7 +194,6 @@ int KcwSharedMemory<T>::open(const std::wstring& strName) {
 
 //    OutputDebugStringA((std::wstring("key: ").append(m_name)).c_str());
 
-    m_notificationEvent = ::OpenEvent(EVENT_ALL_ACCESS, FALSE, (m_name + L"_req_event").c_str());
     m_sharedMemHandle = ::OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, m_name.c_str());
 
     if (!m_sharedMemHandle || (m_sharedMemHandle == INVALID_HANDLE_VALUE)) {
@@ -260,16 +243,6 @@ int KcwSharedMemory<T>::size() const {
 template<typename T>
 bool KcwSharedMemory<T>::opened() const {
     return (m_size != 0);
-}
-
-template<typename T>
-void KcwSharedMemory<T>::notify() {
-    SetEvent(m_notificationEvent);
-}
-
-template<typename T>
-HANDLE KcwSharedMemory<T>::notificationEvent() const {
-    return m_notificationEvent;
 }
 
 #endif /* sharedmemory_h */
