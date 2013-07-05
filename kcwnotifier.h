@@ -39,6 +39,16 @@ class KcwNotifier {
         bool opened() const;
 
         /**
+         * (re-)sets the name of this event
+         */
+        void setNotifierName(const std::wstring& strName);
+
+        /**
+         * returns the name of this event
+         */
+        std::wstring notifierName() const;
+
+        /**
          * notify this event. As soon as this has been registered by an eventloop, this event is automatically reset.
          */
         void notify();
@@ -48,6 +58,7 @@ class KcwNotifier {
          */
         HANDLE handle();
     private:
+        std::wstring m_name;
         HANDLE m_event;
 };
 
