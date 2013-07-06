@@ -44,6 +44,11 @@ class KcwProcess {
         void setStdHandle(HANDLE hdl, KCW_STREAM_TYPE type);
 
         /**
+         * returns the standard handle of the type @p type.
+         */
+        HANDLE stdHandle(KCW_STREAM_TYPE type) const;
+
+        /**
         * when starting a process, you can start it in a paused state and resume() it later.
         */
         void setIsStartedAsPaused(bool isPaused);

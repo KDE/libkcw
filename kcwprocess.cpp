@@ -36,6 +36,10 @@ void KcwProcess::setStdHandle(HANDLE hdl, KCW_STREAM_TYPE type) {
     m_stdHandles[type] = hdl;
 }
 
+HANDLE KcwProcess::stdHandle(KCW_STREAM_TYPE type) const {
+    return m_stdHandles[type];
+}
+
 void KcwProcess::setIsStartedAsPaused(bool isPaused) {
     m_isStartedAsPaused = isPaused;
 }
