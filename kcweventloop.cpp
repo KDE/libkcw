@@ -44,8 +44,10 @@ void KcwEventLoop::addCallback(HANDLE hndl, HANDLE event) {
 void KcwEventLoop::addCallback(HANDLE hndl, eventCallback cllbck, void *callbackObject) {
     EnterCriticalSection(&m_criticalSection);
 //     KcwDebug() << "add callback handle #" << (m_handles.size() + 1) <<  L"in eventLoop" << m_eventLoopId << L"value:" << hndl;
+//     KcwDebug() << "callback object is:" << (int)callbackObject << "this eventloop is:" << this;
     m_handles.push_back(hndl);
-    m_objects.push_back(callbackObject);
+    if(callbackObject) m_objects.push_back(callbackObject);
+    else m_objects.push_back(this);
     m_callbacks.push_back(cllbck);
     LeaveCriticalSection(&m_criticalSection);
 }
