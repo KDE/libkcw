@@ -54,11 +54,6 @@ class KcwProcess {
         void setIsStartedAsPaused(bool isPaused);
 
         /**
-        * sets the path to the executable to @p execPath .
-        */
-        void setExecutablePath(std::string execPath);
-
-        /**
         * set some additional startup flags in @p stFlags .
         */
         void setStartupFlags(int stFlags);
@@ -114,9 +109,14 @@ class KcwProcess {
         int pid() const;
 
         /**
-        * @return the path to the executable.
+        * @return the command to be executed.
         */
-        std::string executablePath() const;
+        std::string cmd() const;
+
+        /**
+         * sets the command to execute.
+         */
+        void setCmd(const std::string& _cmd);
 
         /**
          * @return the exitcode of the process after it finished
@@ -126,7 +126,7 @@ class KcwProcess {
     private:
         KcwThreadRep        m_threadRep;
         HANDLE              m_stdHandles[3];
-        std::string         m_executablePath;
+        std::string         m_cmd;
         int                 m_startupFlags;
         bool                m_isRunning;
         bool                m_isStartedAsPaused;

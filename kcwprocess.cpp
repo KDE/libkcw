@@ -2,7 +2,7 @@
 #include "kcwdebug.h"
 
 KcwProcess::KcwProcess(std::string execPath)
-  : m_executablePath(execPath),
+  : m_cmd(execPath),
     m_isRunning(false),
     m_startupFlags(CREATE_NEW_CONSOLE|CREATE_SUSPENDED),
     m_isStartedAsPaused(true) {
@@ -44,8 +44,8 @@ void KcwProcess::setIsStartedAsPaused(bool isPaused) {
     m_isStartedAsPaused = isPaused;
 }
 
-void KcwProcess::setExecutablePath(std::string execPath) {
-    m_executablePath = execPath;
+void KcwProcess::setCmd(const std::string& _cmd) {
+    m_cmd = _cmd;
 }
 
 void KcwProcess::setStartupFlags(int stFlags) {
@@ -58,24 +58,24 @@ bool KcwProcess::start() {
     ::ZeroMemory(&siWow, sizeof(STARTUPINFO));
 
     siWow.cb            = sizeof(STARTUPINFO);
-/*    if(m_stdHandles[KCW_STDIN_HANDLE]) {
+    if(m_stdHandles[KCW_STDIN_HANDLE]) {
         siWow.hStdInput = m_stdHandles[KCW_STDIN_HANDLE];
-    } else {*/
+        siWow.dwFlags   = STARTF_USESTDHANDLES;
+    } else {
         siWow.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
-        siWow.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-        siWow.hStdError = GetStdHandle(STD_ERROR_HANDLE);
-/*    }
+    }
     if(m_stdHandles[KCW_STDOUT_HANDLE]) {
         siWow.hStdOutput = m_stdHandles[KCW_STDOUT_HANDLE];
+        siWow.dwFlags    = STARTF_USESTDHANDLES;
     } else {
         siWow.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
     }
     if(m_stdHandles[KCW_STDERR_HANDLE]) {
         siWow.hStdError = m_stdHandles[KCW_STDERR_HANDLE];
+        siWow.dwFlags   = STARTF_USESTDHANDLES;
     } else {
         siWow.hStdError = GetStdHandle(STD_ERROR_HANDLE);
-    }*/
-//    siWow.dwFlags       = STARTF_USESTDHANDLES;
+    }
     DWORD dwStartupFlags = m_startupFlags;
 //    DWORD dwStartupFlags = CREATE_SUSPENDED;
 //  | DETACHED_PROCESS; // the detached process won't work
@@ -85,10 +85,10 @@ bool KcwProcess::start() {
     PROCESS_INFORMATION procInfo;
     if (!::CreateProcessA(
             NULL,
-            const_cast<char*>(m_executablePath.c_str()),
+            const_cast<char*>(m_cmd.c_str()),
             NULL,
             NULL,
-            TRUE,
+            FALSE,
             dwStartupFlags,
             NULL,
             NULL,
@@ -145,8 +145,8 @@ int KcwProcess::pid() const {
     return GetProcessId(m_threadRep.processHandle());
 }
 
-std::string KcwProcess::executablePath() const {
-    return m_executablePath;
+std::string KcwProcess::cmd() const {
+    return m_cmd;
 }
 
 int KcwProcess::exitCode() const {
