@@ -41,6 +41,7 @@ class KcwThread : public KcwEventLoop, public KcwThreadRep {
         * running per default. You can override this behaviour by overloading run().
         */
         virtual DWORD run();
+        KCW_CALLBACK(KcwThread, quit)
 
     private:
         static DWORD WINAPI monitorThreadStatic(LPVOID lpParameter);
