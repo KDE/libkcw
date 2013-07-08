@@ -31,10 +31,16 @@ class KcwInjector {
         * this function injects the dll
         */
         bool inject();
+
+        /**
+         * @return the address of the loaded dll
+         */
+        DWORD baseAddress() const;
     private:
         HANDLE m_destProcess;
         HANDLE m_destThread;
         std::wstring m_dllPath;
+        DWORD m_baseAddress;
 
 };
 #endif /* kcwinjector_h */

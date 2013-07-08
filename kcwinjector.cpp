@@ -42,6 +42,12 @@ bool KcwInjector::inject() {
     if(retCode != WAIT_OBJECT_0) {
         retVal = false;
     }
+    // FIXME: exit code on 64 bit is 32 bit, so the baseAddress is truncated. we need to find a different way to get that information
+    GetExitCodeThread(remoteThread, &m_baseAddress);
     VirtualFreeEx(m_destProcess, mem, 0, MEM_RELEASE);
     return retVal;
+}
+
+DWORD KcwInjector::baseAddress() const {
+    return m_baseAddress;
 }
