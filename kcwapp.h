@@ -16,7 +16,9 @@ class KcwApp : public KcwEventLoop {
         * construct a default KcwApp object.
         */
         KcwApp();
-        
+
+        KCW_CALLBACK(KcwApp, quit)
+
         static BOOL HandlerRoutine(DWORD dwCtrlType);
 };
 #endif /* kcwapp_h */
