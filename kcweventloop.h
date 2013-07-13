@@ -79,7 +79,7 @@ class KcwEventLoop {
 };
 
 #define KCW_CALLBACK(class, name) \
-void  name##();\
-static void name##static(void *obj) { reinterpret_cast<##class##*>(obj)->##name##(); }
+void  name();\
+static void name##static(void *obj) { reinterpret_cast<class*>(obj)->name(); }
 #define CB(name) &name##static
 #endif /* kcweventloop_h */
