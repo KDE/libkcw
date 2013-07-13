@@ -60,3 +60,17 @@ KcwDebug& endl(KcwDebug& os) {
     return os;
 }
 
+template<> KcwDebug& KcwDebug::operator<<(std::wstring i) {
+    spaceIt();
+    const wchar_t *wstr = i.c_str();
+    char *str = new char[i.length() + 1];
+    ZeroMemory(str, (i.length() + 1) * sizeof(char));
+    std::use_facet<std::ctype<wchar_t>>(s_loc).narrow(wstr, wstr+wcslen(wstr), '?', str);
+    str[wcslen(wstr)] = 0;
+    m_ss << str;
+    return maybeSpaceReference();
+}
+
+template<> KcwDebug& KcwDebug::operator<<(const wchar_t* i) {
+    return KcwDebug::operator<<(std::wstring(i));
+}
