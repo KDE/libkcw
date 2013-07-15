@@ -54,7 +54,7 @@ void KcwEventLoop::addCallback(HANDLE hndl, eventCallback cllbck, void *callback
 
 void KcwEventLoop::quit() {
     DWORD dwProcessId = ::GetCurrentProcessId();
-//    KcwDebug() << "quit was called in process" << dwProcessId;
+    KcwDebug() << "quit was called in process" << dwProcessId;
     EnterCriticalSection(&m_criticalSection);
     SetEvent(m_eventHandle);
     LeaveCriticalSection(&m_criticalSection);
@@ -86,6 +86,24 @@ HANDLE KcwEventLoop::exitEvent() {
 int KcwEventLoop::eventLoopId() const {
     return m_eventLoopId;
 }
+
+void KcwEventLoop::callForObject(int objNum) {
+    if(m_callbacks[objNum] != NULL) {
+//         KcwDebug() << "calling callback for event #" << objNum << "in eventloop #" << m_eventLoopId << "of process" << dwProcessId;
+        eventCallback callback = m_callbacks[objNum];
+        void *arg = m_objects[objNum];
+        LeaveCriticalSection(&m_criticalSection);
+//         KcwDebug() << "argument:" << arg;
+        callback(arg);
+        EnterCriticalSection(&m_criticalSection);
+    } else {
+//         KcwDebug() << "calling quit for event #" << objNum << "in eventloop #" << m_eventLoopId << "of process" << dwProcessId;
+        LeaveCriticalSection(&m_criticalSection);
+        quit();
+        EnterCriticalSection(&m_criticalSection);
+    }
+}
+
 int KcwEventLoop::exec() {
     DWORD dwHandleInfo = 0, dwWaitRes = 0, dwProcessId = ::GetCurrentProcessId();
 
@@ -125,24 +143,18 @@ int KcwEventLoop::exec() {
 //        EnterCriticalSection(&m_criticalSection);
         if(dwWaitRes == WAIT_TIMEOUT) continue;
 
-        for(int i = 0; i < handleSize; i++) {
+        int i = 0;
+        for(; i < handleSize; i++) {
             if(dwWaitRes == WAIT_OBJECT_0 + i) {
-                if(m_callbacks[i] != NULL) {
-//                     KcwDebug() << "calling callback for event #" << i << "in eventloop #" << m_eventLoopId << "of process" << dwProcessId;
-                    eventCallback callback = m_callbacks[i];
-                    void *arg = m_objects[i];
-                    LeaveCriticalSection(&m_criticalSection);
-//                     KcwDebug() << "argument:" << arg;
-                    callback(arg);
-                    EnterCriticalSection(&m_criticalSection);
-                } else {
-//                     KcwDebug() << "calling quit for event #" << i << "in eventloop #" << m_eventLoopId << "of process" << dwProcessId;
-                    LeaveCriticalSection(&m_criticalSection);
-                    quit();
-                    EnterCriticalSection(&m_criticalSection);
-                }
+                callForObject(i);
+                break;
             }
-        }
+        };
+        for(int j = i + 1; j < handleSize; j++) {
+            if(m_objects[i] == m_objects[j]) {
+                callForObject(j);
+            }
+        };
     }
     LeaveCriticalSection(&m_criticalSection);
     return 0;

@@ -66,6 +66,7 @@ class KcwEventLoop {
         int eventLoopId() const;
 
     private:
+        void callForObject(int objNum);
         static void handleCallback(HANDLE obj);
         std::vector<eventCallback> m_callbacks;
         std::vector<void*> m_objects;
