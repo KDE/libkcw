@@ -18,10 +18,6 @@ void KcwThread::start() {
     ::ResumeThread(m_thread);
 }
 
-void KcwThread::quit() {
-    KcwEventLoop::quit();
-}
-
 // a static helper function that is called by the operating system
 DWORD WINAPI KcwThread::monitorThreadStatic(LPVOID lpParameter) {
     if(lpParameter == 0) {
