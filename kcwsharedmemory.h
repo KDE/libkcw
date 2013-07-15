@@ -64,6 +64,11 @@ class KcwSharedMemory {
         inline T* data();
 
         /**
+         * @return a const pointer to the shared memory segment.
+         */
+        inline T* const data() const;
+
+        /**
         * @return the size of this shared memory segment.
         */
         int size() const;
@@ -232,6 +237,11 @@ T& KcwSharedMemory<T>::operator[](size_t index) const {
 
 template<typename T>
 T* KcwSharedMemory<T>::data() {
+    return m_sharedMem + sizeof(m_size);
+}
+
+template<typename T>
+T* const KcwSharedMemory<T>::data() const {
     return m_sharedMem + sizeof(m_size);
 }
 
