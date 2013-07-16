@@ -29,12 +29,18 @@ class KcwThread : public KcwEventLoop, public KcwThreadRep {
         * @warning not change the exitEvent status after you started the thread.
         */
         KcwThread(HANDLE exitEventHandle = NULL);
+        ~KcwThread();
 
         /**
         * this function starts the thread. The function run() will be called in
         * the thread.
         */
         void start();
+
+        /**
+         * pauses this thread.
+         */
+        void pause();
 
         /**
         * this function is called when the thread is running. There is an eventLoop

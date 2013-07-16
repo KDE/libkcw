@@ -13,9 +13,17 @@ KcwThread::KcwThread(HANDLE exitEventHandle) : KcwEventLoop() {
     m_thread = ::CreateThread(NULL, 0, monitorThreadStatic, reinterpret_cast<void*>(this), CREATE_SUSPENDED, NULL);
 }
 
+KcwThread::~KcwThread() {
+//     KcwDebug() << "leaving thread!";
+}
+
 // start the thread by resuming it
 void KcwThread::start() {
     ::ResumeThread(m_thread);
+}
+
+void KcwThread::pause() {
+    ::SuspendThread(m_thread);
 }
 
 // a static helper function that is called by the operating system
@@ -35,7 +43,7 @@ DWORD WINAPI KcwThread::monitorThreadStatic(LPVOID lpParameter) {
 DWORD KcwThread::monitorThread() {
     DWORD dwThreadResult = 0;
     dwThreadResult = run();
-    KcwEventLoop::quit();
+//     KcwDebug() << "eventloop for thread ended!";
     return dwThreadResult;
 }
 
