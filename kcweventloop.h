@@ -29,7 +29,9 @@ class KcwEventLoop {
         */
         void addCallback(HANDLE hndl, eventCallback cllbck = NULL, void *callbackObject = NULL);
         void addCallback(HANDLE hndl, HANDLE notification);
-    
+
+        void removeCallback(HANDLE hndl, eventCallback cllbck = NULL);
+
         /**
         * call this function to run the event loop and to get notified.
         */
@@ -66,11 +68,13 @@ class KcwEventLoop {
         int eventLoopId() const;
 
     private:
-        void callForObject(int objNum);
+        bool callForObject(int objNum);
         static void handleCallback(HANDLE obj);
         std::vector<eventCallback> m_callbacks;
         std::vector<void*> m_objects;
         std::vector<HANDLE> m_handles;
+        std::vector<int> m_removeCallbacks;
+    protected:
         int m_refreshInterval;
         const int m_eventLoopId;
         HANDLE m_eventHandle;

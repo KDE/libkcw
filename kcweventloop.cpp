@@ -10,7 +10,6 @@ KcwEventLoop::KcwEventLoop(HANDLE eventHandle)
  :  m_refreshInterval(10),
     m_eventLoopId(getUniqueCounter()) {
     InitializeCriticalSection(&m_criticalSection);
-    EnterCriticalSection(&m_criticalSection);
 
     // the event handle is used to signal that this eventloop should simply close itself.
     if(eventHandle != NULL) {
@@ -26,38 +25,43 @@ KcwEventLoop::KcwEventLoop(HANDLE eventHandle)
     m_handles.push_back(m_eventHandle);
     m_objects.push_back(NULL);
     m_callbacks.push_back(NULL);
-    LeaveCriticalSection(&m_criticalSection);
 }
 
 KcwEventLoop::~KcwEventLoop() {
+//     KcwDebug() << "Leaving event loop #" << m_eventLoopId;
 }
 
 void KcwEventLoop::addCallback(HANDLE hndl, HANDLE event) {
-    EnterCriticalSection(&m_criticalSection);
-//     KcwDebug() << "add event handle #" << (m_handles.size() + 1) <<  L"in eventLoop" << m_eventLoopId << L"value:" << hndl;
+//     KcwDebug() << "add event handle #" << m_handles.size() <<  L"in eventLoop" << m_eventLoopId << L"value:" << hndl;
     m_handles.push_back(hndl);
     m_objects.push_back(event);
     m_callbacks.push_back(handleCallback);
-    LeaveCriticalSection(&m_criticalSection);
 }
 
 void KcwEventLoop::addCallback(HANDLE hndl, eventCallback cllbck, void *callbackObject) {
-    EnterCriticalSection(&m_criticalSection);
-//     KcwDebug() << "add callback handle #" << (m_handles.size() + 1) <<  L"in eventLoop" << m_eventLoopId << L"value:" << hndl;
+//     KcwDebug() << "add callback handle #" << m_handles.size() <<  L"in eventLoop" << m_eventLoopId << L"value:" << hndl;
 //     KcwDebug() << "callback object is:" << (int)callbackObject << "this eventloop is:" << this;
     m_handles.push_back(hndl);
     if(callbackObject) m_objects.push_back(callbackObject);
     else m_objects.push_back(this);
     m_callbacks.push_back(cllbck);
-    LeaveCriticalSection(&m_criticalSection);
+}
+
+void KcwEventLoop::removeCallback(HANDLE hndl, eventCallback cllbck) {
+//     KcwDebug() << "removing callback for handle" << hndl << "in eventLoop #" << m_eventLoopId;
+    for(int i = 1; i < m_handles.size(); i++) {
+        if(m_handles[i] == hndl) {
+            if((cllbck != NULL && cllbck == m_callbacks[i]) || cllbck == 0) {
+                m_removeCallbacks.push_back(i);
+            }
+        }
+    }
 }
 
 void KcwEventLoop::quit() {
     DWORD dwProcessId = ::GetCurrentProcessId();
-    KcwDebug() << "quit was called in process" << dwProcessId;
-    EnterCriticalSection(&m_criticalSection);
+//     KcwDebug() << "quit was called in process" << dwProcessId << " in eventLoop" << m_eventLoopId;
     SetEvent(m_eventHandle);
-    LeaveCriticalSection(&m_criticalSection);
 }
 
 void KcwEventLoop::setRefreshInterval(int secs) {
@@ -87,29 +91,31 @@ int KcwEventLoop::eventLoopId() const {
     return m_eventLoopId;
 }
 
-void KcwEventLoop::callForObject(int objNum) {
+bool KcwEventLoop::callForObject(int objNum) {
     if(m_callbacks[objNum] != NULL) {
-//         KcwDebug() << "calling callback for event #" << objNum << "in eventloop #" << m_eventLoopId << "of process" << dwProcessId;
+//         KcwDebug() << "calling callback for event #" << objNum << "in eventloop #" << m_eventLoopId;
         eventCallback callback = m_callbacks[objNum];
         void *arg = m_objects[objNum];
         LeaveCriticalSection(&m_criticalSection);
 //         KcwDebug() << "argument:" << arg;
         callback(arg);
         EnterCriticalSection(&m_criticalSection);
+        return false;
     } else {
 //         KcwDebug() << "calling quit for event #" << objNum << "in eventloop #" << m_eventLoopId << "of process" << dwProcessId;
         LeaveCriticalSection(&m_criticalSection);
         quit();
         EnterCriticalSection(&m_criticalSection);
+        return true;
     }
 }
 
 int KcwEventLoop::exec() {
     DWORD dwHandleInfo = 0, dwWaitRes = 0, dwProcessId = ::GetCurrentProcessId();
 
-    std::vector<HANDLE> locHandles(m_handles);
     EnterCriticalSection(&m_criticalSection);
-    const int handleSize = locHandles.size();
+    std::vector<HANDLE> locHandles(m_handles);
+    int handleSize = locHandles.size();
 //     KcwDebug() << "checking for #" << handleSize << " handles";
     for(int i = 0; i < handleSize; i++) {
         if(!GetHandleInformation(locHandles.at(i), &dwHandleInfo)) {
@@ -121,7 +127,6 @@ int KcwEventLoop::exec() {
 
     HANDLE *begin = &locHandles.front();
     while ((dwWaitRes = ::WaitForMultipleObjects(handleSize, begin, FALSE, m_refreshInterval)) != WAIT_OBJECT_0) {
-//        LeaveCriticalSection(&m_criticalSection);
         if(dwWaitRes == WAIT_FAILED) {
             WCHAR lpMsgBuf[1024];
             DWORD dw = GetLastError(); 
@@ -135,26 +140,30 @@ int KcwEventLoop::exec() {
                 lpMsgBuf,
                 0, NULL );
 
-//            EnterCriticalSection(&m_criticalSection);
             KcwDebug() << "eventLoop wait failed!" << endl << "pid:" << dwProcessId << "#handles:" << locHandles.size() << "result:" << dwWaitRes << (const wchar_t*)lpMsgBuf << endl;
             break;
         }
 
-//        EnterCriticalSection(&m_criticalSection);
-        if(dwWaitRes == WAIT_TIMEOUT) continue;
-
-        int i = 0;
+        int i = 1;
+        bool quitNow = false;
         for(; i < handleSize; i++) {
             if(dwWaitRes == WAIT_OBJECT_0 + i) {
-                callForObject(i);
+//                 KcwDebug() << "calling cb for " << i << " in eventLoop #" << m_eventLoopId;
+                quitNow = callForObject(i);
                 break;
             }
         };
-        for(int j = i + 1; j < handleSize; j++) {
-            if(m_objects[i] == m_objects[j]) {
-                callForObject(j);
-            }
-        };
+        if(quitNow) break;
+
+        if(dwWaitRes == WAIT_TIMEOUT) continue;
+
+        for(int j = 0; j < m_removeCallbacks.size(); j++) {
+            m_handles.erase(m_handles.begin() + j);
+            m_objects.erase(m_objects.begin() + j);
+            m_callbacks.erase(m_callbacks.begin() + j);
+            handleSize = m_handles.size();
+        }
+        m_removeCallbacks.erase(m_removeCallbacks.begin(), m_removeCallbacks.end());
     }
     LeaveCriticalSection(&m_criticalSection);
     return 0;
