@@ -88,3 +88,7 @@ void KcwNotifier::notify() {
 HANDLE KcwNotifier::handle() {
     return m_event;
 }
+
+KcwNotifier::operator HANDLE() {
+    return m_event;
+}

@@ -57,6 +57,11 @@ class KcwNotifier {
          * returns the handle that needs to be added to the eventloops.
          */
         HANDLE handle();
+
+        /**
+         * implicitly converts a notifier into a HANDLE
+         */
+        operator HANDLE();
     private:
         std::wstring m_name;
         HANDLE m_event;
