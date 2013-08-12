@@ -35,12 +35,12 @@ class KcwThread : public KcwEventLoop, public KcwThreadRep {
         * this function starts the thread. The function run() will be called in
         * the thread.
         */
-        void start();
+        virtual void start();
 
         /**
          * pauses this thread.
          */
-        void pause();
+        virtual void pause();
 
         /**
         * this function is called when the thread is running. There is an eventLoop
