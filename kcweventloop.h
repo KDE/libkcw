@@ -26,9 +26,10 @@ class KcwEventLoop {
         * This function can be used to add handles to wait for and a callback to be called 
         * when this specific handle got signaled. Since this is a primitive implementation,
         * calling addCallback after exec gives undefined behavior.
+        * if @p singleCall is true, the callback will be removed from the eventloop after it has fired
         */
-        void addCallback(HANDLE hndl, eventCallback cllbck = NULL, void *callbackObject = NULL);
-        void addCallback(HANDLE hndl, HANDLE notification);
+        void addCallback(HANDLE hndl, eventCallback cllbck = NULL, void *callbackObject = NULL, bool singleCall = false);
+        void addCallback(HANDLE hndl, HANDLE notification, bool singleCall = false);
 
         void removeCallback(HANDLE hndl, eventCallback cllbck = NULL);
 
@@ -68,12 +69,18 @@ class KcwEventLoop {
         int eventLoopId() const;
 
     private:
-        bool callForObject(int objNum);
+        bool callForObject(unsigned objNum);
+
+        void removeCallback(unsigned n);
+        // returns the new number of callbacks available
+        unsigned cleanupCallbacks();
+
         static void handleCallback(HANDLE obj);
         std::vector<eventCallback> m_callbacks;
         std::vector<void*> m_objects;
         std::vector<HANDLE> m_handles;
         std::vector<int> m_removeCallbacks;
+        std::vector<bool> m_singleCall;
     protected:
         int m_refreshInterval;
         const int m_eventLoopId;

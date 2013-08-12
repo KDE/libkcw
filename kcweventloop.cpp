@@ -1,4 +1,5 @@
 #include <vector>
+#include <algorithm>
 
 #include "kcweventloop.h"
 #include "kcwsharedmemory.h"
@@ -25,37 +26,65 @@ KcwEventLoop::KcwEventLoop(HANDLE eventHandle)
     m_handles.push_back(m_eventHandle);
     m_objects.push_back(NULL);
     m_callbacks.push_back(NULL);
+    m_singleCall.push_back(false);
 }
 
 KcwEventLoop::~KcwEventLoop() {
 //     KcwDebug() << "Leaving event loop #" << m_eventLoopId;
 }
 
-void KcwEventLoop::addCallback(HANDLE hndl, HANDLE event) {
-//     KcwDebug() << "add event handle #" << m_handles.size() <<  L"in eventLoop" << m_eventLoopId << L"value:" << hndl;
-    m_handles.push_back(hndl);
-    m_objects.push_back(event);
-    m_callbacks.push_back(handleCallback);
+void KcwEventLoop::addCallback(HANDLE hndl, HANDLE event, bool singleCall) {
+    addCallback(hndl, handleCallback, event, singleCall);
 }
 
-void KcwEventLoop::addCallback(HANDLE hndl, eventCallback cllbck, void *callbackObject) {
+void KcwEventLoop::addCallback(HANDLE hndl, eventCallback cllbck, void *callbackObject, bool singleCall) {
 //     KcwDebug() << "add callback handle #" << m_handles.size() <<  L"in eventLoop" << m_eventLoopId << L"value:" << hndl;
 //     KcwDebug() << "callback object is:" << (int)callbackObject << "this eventloop is:" << this;
+    for(unsigned i = 0; i < m_handles.size(); i++) {
+        if(m_handles[i] == hndl) {
+            KcwDebug() << "Error! trying to add the same handle twice to this eventloop!";
+            KcwDebug() << "Handle in question is:" << hndl;
+            return;
+        }
+    }
     m_handles.push_back(hndl);
     if(callbackObject) m_objects.push_back(callbackObject);
     else m_objects.push_back(this);
     m_callbacks.push_back(cllbck);
+    m_singleCall.push_back(singleCall);
 }
 
 void KcwEventLoop::removeCallback(HANDLE hndl, eventCallback cllbck) {
 //     KcwDebug() << "removing callback for handle" << hndl << "in eventLoop #" << m_eventLoopId;
-    for(int i = 1; i < m_handles.size(); i++) {
-        if(m_handles[i] == hndl) {
-            if((cllbck != NULL && cllbck == m_callbacks[i]) || cllbck == 0) {
-                m_removeCallbacks.push_back(i);
-            }
+    for(unsigned i = 1; i < m_handles.size(); i++) {
+        if(m_handles[i] == hndl && ((cllbck != NULL && cllbck == m_callbacks[i]) || cllbck == 0)) {
+            removeCallback(i);
+            return;
         }
     }
+}
+
+void KcwEventLoop::removeCallback(unsigned n) {
+    for(unsigned i = 0; i < m_removeCallbacks.size(); i++) {
+        if(m_removeCallbacks[i] == n) return;
+    }
+    m_removeCallbacks.push_back(n);
+}
+
+unsigned KcwEventLoop::cleanupCallbacks() {
+    // first sort the callbacks, then reverse the order, so that removing that callback doesn't change the order of 
+    std::sort(m_removeCallbacks.begin(), m_removeCallbacks.end());
+    std::reverse(m_removeCallbacks.begin(), m_removeCallbacks.end());
+
+    for(unsigned j = 0; j < m_removeCallbacks.size(); j++) {
+        int toErase = m_removeCallbacks[j];
+        m_handles.erase(m_handles.begin() + toErase);
+        m_objects.erase(m_objects.begin() + toErase);
+        m_callbacks.erase(m_callbacks.begin() + toErase);
+        m_singleCall.erase(m_singleCall.begin() + toErase);
+    }
+    m_removeCallbacks.erase(m_removeCallbacks.begin(), m_removeCallbacks.end());
+    return m_handles.size();
 }
 
 void KcwEventLoop::quit() {
@@ -91,7 +120,7 @@ int KcwEventLoop::eventLoopId() const {
     return m_eventLoopId;
 }
 
-bool KcwEventLoop::callForObject(int objNum) {
+bool KcwEventLoop::callForObject(unsigned objNum) {
     if(m_callbacks[objNum] != NULL) {
 //         KcwDebug() << "calling callback for event #" << objNum << "in eventloop #" << m_eventLoopId;
         eventCallback callback = m_callbacks[objNum];
@@ -115,9 +144,9 @@ int KcwEventLoop::exec() {
 
     EnterCriticalSection(&m_criticalSection);
     std::vector<HANDLE> locHandles(m_handles);
-    int handleSize = locHandles.size();
+    unsigned handleSize = locHandles.size();
 //     KcwDebug() << "checking for #" << handleSize << " handles";
-    for(int i = 0; i < handleSize; i++) {
+    for(unsigned i = 0; i < handleSize; i++) {
         if(!GetHandleInformation(locHandles.at(i), &dwHandleInfo)) {
             KcwDebug() << "Handle #" << i << "is broken in process" << dwProcessId;
             LeaveCriticalSection(&m_criticalSection);
@@ -144,26 +173,24 @@ int KcwEventLoop::exec() {
             break;
         }
 
-        int i = 1;
+        unsigned i = 1;
         bool quitNow = false;
         for(; i < handleSize; i++) {
             if(dwWaitRes == WAIT_OBJECT_0 + i) {
 //                 KcwDebug() << "calling cb for " << i << " in eventLoop #" << m_eventLoopId;
                 quitNow = callForObject(i);
+
+                // in case we have a single call, we want to unregister now
+                if(m_singleCall[i]) m_removeCallbacks.push_back(i);
                 break;
             }
         };
-        if(quitNow) break;
 
         if(dwWaitRes == WAIT_TIMEOUT) continue;
 
-        for(int j = 0; j < m_removeCallbacks.size(); j++) {
-            m_handles.erase(m_handles.begin() + j);
-            m_objects.erase(m_objects.begin() + j);
-            m_callbacks.erase(m_callbacks.begin() + j);
-            handleSize = m_handles.size();
-        }
-        m_removeCallbacks.erase(m_removeCallbacks.begin(), m_removeCallbacks.end());
+        handleSize = cleanupCallbacks();
+
+        if(quitNow) break;
     }
     LeaveCriticalSection(&m_criticalSection);
     return 0;
