@@ -8,6 +8,7 @@ target_link_libraries(testplugin kcw)
 
 add_library(simpleinjectable SHARED simpleinjectable.cpp)
 target_link_libraries(simpleinjectable kcw)
+set_target_properties(commoninjector testplugin simpleinjectable PROPERTIES PREFIX "")
 
 set(kcw_TESTS
     debugtest
