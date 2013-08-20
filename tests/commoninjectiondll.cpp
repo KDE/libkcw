@@ -1,7 +1,7 @@
 #include "kcwsharedmemory.h"
 #include "kcwdebug.h"
 
-BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /* lpvReserved */ ) {
+extern "C" __declspec(dllexport) BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /* lpvReserved */ ) {
     switch(dwReason) {
         case DLL_PROCESS_ATTACH:
         {

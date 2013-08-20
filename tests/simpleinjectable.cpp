@@ -21,7 +21,7 @@ std::wstring getModulePath(HMODULE hModule) {
     return strPath.substr(0, strPath.rfind('\\'));
 }
 
-BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /* lpvReserved */ ) {
+extern "C" __declspec(dllexport) BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /* lpvReserved */ ) {
     hModule = hInstance;
 
     switch(dwReason) {
