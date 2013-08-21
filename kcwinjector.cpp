@@ -1,6 +1,8 @@
 #include "kcwinjector.h"
 #include "kcwdebug.h"
 
+#include <TlHelp32.h>
+
 KcwInjector::KcwInjector()
  : m_destProcess(NULL),
    m_destThread(NULL) {
@@ -18,7 +20,6 @@ void KcwInjector::setInjectionDll(std::wstring dllPath) {
 bool KcwInjector::inject() {
     void* mem = NULL;
     size_t memLen = 0;
-    bool retVal = true;
     LPTHREAD_START_ROUTINE fnLoadLibrary = NULL;
 
     if(m_destProcess == NULL || m_destThread == NULL) {
@@ -39,15 +40,42 @@ bool KcwInjector::inject() {
     WriteProcessMemory(m_destProcess, mem, m_dllPath.c_str(), (m_dllPath.length() + 1)*sizeof(wchar_t), NULL);
     HANDLE remoteThread = CreateRemoteThread(m_destProcess, NULL, NULL, fnLoadLibrary, mem, NULL, NULL);
     DWORD retCode = WaitForSingleObject(remoteThread, INFINITE);
-    if(retCode != WAIT_OBJECT_0) {
-        retVal = false;
-    }
-    // FIXME: exit code on 64 bit is 32 bit, so the baseAddress is truncated. we need to find a different way to get that information
-    GetExitCodeThread(remoteThread, &m_baseAddress);
     VirtualFreeEx(m_destProcess, mem, 0, MEM_RELEASE);
+    if(retCode != WAIT_OBJECT_0) {
+        KcwDebug() << "failed to load dll into process" << GetProcessId(m_destProcess);
+        return false;
+    }
+
+    HANDLE ths = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetProcessId(m_destProcess));
+    if(ths == NULL) {
+        KcwDebug() << "creating snapshot failed to find modules";
+        return false;
+    }
+
+    MODULEENTRY32 me32;
+    ZeroMemory(&me32, sizeof(MODULEENTRY32));
+    me32.dwSize = sizeof(MODULEENTRY32);
+
+    if(!Module32First(ths, &me32)) {
+        KcwDebug() << "couldn't find first module!";
+        CloseHandle(ths);
+        return false;
+    }
+
+    bool retVal = false;
+
+    do {
+        if(wcscmp(m_dllPath.c_str(), me32.szExePath) == 0) {
+            m_baseAddress = me32.modBaseAddr;
+            retVal = true;
+            break;
+        }
+    } while(Module32Next(ths, &me32));
+
+    CloseHandle(ths);
     return retVal;
 }
 
-DWORD KcwInjector::baseAddress() const {
+void* KcwInjector::baseAddress() const {
     return m_baseAddress;
 }
