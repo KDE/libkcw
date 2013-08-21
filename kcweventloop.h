@@ -29,7 +29,6 @@ class KcwEventLoop {
         * if @p singleCall is true, the callback will be removed from the eventloop after it has fired
         */
         void addCallback(HANDLE hndl, eventCallback cllbck = NULL, void *callbackObject = NULL, bool singleCall = false);
-        void addCallback(HANDLE hndl, HANDLE notification, bool singleCall = false);
 
         void removeCallback(HANDLE hndl, eventCallback cllbck = NULL);
 

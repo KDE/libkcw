@@ -33,10 +33,6 @@ KcwEventLoop::~KcwEventLoop() {
 //     KcwDebug() << "Leaving event loop #" << m_eventLoopId;
 }
 
-void KcwEventLoop::addCallback(HANDLE hndl, HANDLE event, bool singleCall) {
-    addCallback(hndl, handleCallback, event, singleCall);
-}
-
 void KcwEventLoop::addCallback(HANDLE hndl, eventCallback cllbck, void *callbackObject, bool singleCall) {
 //     KcwDebug() << "add callback handle #" << m_handles.size() <<  L"in eventLoop" << m_eventLoopId << L"value:" << hndl;
 //     KcwDebug() << "callback object is:" << (int)callbackObject << "this eventloop is:" << this;
