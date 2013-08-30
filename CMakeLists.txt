@@ -24,7 +24,7 @@ install(FILES
 
 if(BUILD_TESTS)
     enable_testing()
-endif(BUILD_TESTS)
+endif()
 
 set(kcw_HDRS
     kcwapp.h
@@ -70,13 +70,13 @@ if(BUILD_DOCS)
 			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 			COMMENT "Generating API documentation with Doxygen" VERBATIM
 		)
-	endif(DOXYGEN_FOUND)
+	endif()
 	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs/html DESTINATION doc/kcw COMPONENT doc)
-endif(BUILD_DOCS)
+endif()
 
 if(BUILD_TESTS)
 add_subdirectory(tests)
-endif(BUILD_TESTS)
+endif()
 
 export(TARGETS kcw FILE "${CMAKE_CURRENT_BINARY_DIR}/KcwTargets.cmake")
 export(PACKAGE kcw)
