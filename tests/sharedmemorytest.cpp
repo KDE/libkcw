@@ -1,4 +1,5 @@
 #include <string>
+#include <random>
 #include <windows.h>
 
 #include "kcwsharedmemory.h"
@@ -49,5 +50,37 @@ int main(int argc, char ** argv) {
     KcwSharedMemory<int> test5;
     test5.open(L"sharedmemorytest-fail");
     KcwTestAssert(test5.opened() == false, L"shared memory segment exists even though it shouldn't!");
+
+    // check resizing and reuse test3 and test4
+    const int lowerSize = 1000;
+    const int higherSize = 23343;
+    const int smallestSize = 979;
+    test3.create(L"sharedmemorytest-resize", lowerSize);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int<> dis(0, 2 << 31);
+    int *array = new int[higherSize];
+    for(int i = 0; i < higherSize; i++) array[i] = dis(gen);
+    memcpy(test3.data(), array, lowerSize * sizeof(int));
+
+    KcwTestAssert(test4.open(L"sharedmemorytest-resize") == 0, L"could not open shared memory before resize");
+    KcwTestAssert(memcmp(test4.data(), array, lowerSize * sizeof(int)) == 0, L"original data before resize is not correct");
+    test4.close();
+    KcwTestAssert(test3.resize(higherSize) == 0, L"could not resize shared memory (increase)");
+    KcwTestAssert(test4.open(L"sharedmemorytest-resize") == 0, L"could not open resized memory");
+    KcwTestAssert(test3.size() == higherSize, L"size of resized memory not correct");
+    KcwTestAssert(test4.size() == higherSize, L"size of resized memory not correct");
+    KcwTestAssert(memcmp(test3.data(), array, lowerSize * sizeof(int)) == 0, L"data after resize is not correct");
+    KcwTestAssert(memcmp(test4.data(), array, lowerSize * sizeof(int)) == 0, L"data after resize is not correct");
+    memcpy(test4.data(), array, higherSize * sizeof(int));
+    KcwTestAssert(memcmp(test4.data(), array, higherSize * sizeof(int)) == 0, L"rewritten data after resize is not correct");
+    test3.close();
+    KcwTestAssert(test4.resize(smallestSize) == 0, L"could not resize shared memory (decrease)");
+    test3.open(L"sharedmemorytest-resize");
+    KcwTestAssert(test3.size() == smallestSize, L"size of resized memory not correct");
+    KcwTestAssert(test4.size() == smallestSize, L"size of resized memory not correct");
+    KcwTestAssert(memcmp(test4.data(), array, smallestSize * sizeof(int)) == 0, L"rerewritten data after resize is not correct");
+
+    delete[] array;
     return 0;
 }
