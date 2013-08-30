@@ -45,6 +45,11 @@ class KcwSharedMemory {
          * went wrong.
          */
         inline bool close();
+
+        /**
+         * resizes the current object.
+         */
+        int resize(int size);
         /**@}*/
 
         /**
@@ -79,7 +84,10 @@ class KcwSharedMemory {
         */
         bool opened() const;
 
-
+        /**
+         * @return the name of the shared memory segment
+         */
+        std::wstring name() const;
     private:
         std::wstring m_name;
         int         m_size;
@@ -128,17 +136,6 @@ KcwSharedMemory<T>::~KcwSharedMemory() {
     wsprintf(buf, L"deleting shared memory object %s", m_name.c_str());
 //     OutputDebugStringW(buf);
     close();
-}
-
-template<typename T>
-bool KcwSharedMemory<T>::close() {
-    // not implemented yet
-    UnmapViewOfFile((LPCVOID)m_sharedMem);
-    CloseHandle(m_sharedMemHandle);
-    m_sharedMem = NULL;
-    m_sharedMemHandle = NULL;
-    m_size = 0;
-    return true;
 }
 
 template<typename T>
@@ -215,6 +212,31 @@ int KcwSharedMemory<T>::open(const std::wstring& strName) {
 }
 
 template<typename T>
+bool KcwSharedMemory<T>::close() {
+    // not implemented yet
+    UnmapViewOfFile((LPCVOID)m_sharedMem);
+    CloseHandle(m_sharedMemHandle);
+    m_sharedMem = NULL;
+    m_sharedMemHandle = NULL;
+    m_size = 0;
+    return true;
+}
+
+template<typename T>
+int KcwSharedMemory<T>::resize(int size) {
+    if(m_sharedMemHandle == NULL) return -1;
+
+    T* safeBuffer = new T[m_size];
+    memcpy(safeBuffer, m_sharedMem + sizeof(m_size), m_size * sizeof(T));
+    int oldsize = m_size;
+    close();
+    int res = create(m_name, size);
+    if(res != 0) return res;
+    memcpy(m_sharedMem + sizeof(m_size), safeBuffer, ((oldsize < size) ? oldsize : size) * sizeof(T));
+    return 0;
+}
+
+template<typename T>
 T* KcwSharedMemory<T>::operator->() const {
     return m_sharedMem + sizeof(m_size);
 }
@@ -255,4 +277,8 @@ bool KcwSharedMemory<T>::opened() const {
     return (m_size != 0);
 }
 
+template<typename T>
+std::wstring KcwSharedMemory<T>::name() const {
+    return m_name;
+}
 #endif /* sharedmemory_h */
