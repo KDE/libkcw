@@ -4,6 +4,7 @@
 KcwProcess::KcwProcess(std::string execPath)
   : m_cmd(execPath),
     m_isRunning(false),
+    m_isStartedAsHidden(false),
     m_startupFlags(CREATE_NEW_CONSOLE|CREATE_SUSPENDED),
     m_isStartedAsPaused(true) {
     m_stdHandles[KCW_STDIN_HANDLE] = 0;
@@ -17,6 +18,7 @@ KcwProcess::KcwProcess(std::string execPath)
 KcwProcess::KcwProcess(int pid)
   : m_isRunning(true),
     m_startupFlags(CREATE_NEW_CONSOLE|CREATE_SUSPENDED),
+    m_isStartedAsHidden(false),
     m_isStartedAsPaused(true) {
     m_stdHandles[KCW_STDIN_HANDLE] = 0;
     m_stdHandles[KCW_STDOUT_HANDLE] = 0;
@@ -26,6 +28,7 @@ KcwProcess::KcwProcess(int pid)
 KcwProcess::KcwProcess()
   : m_isRunning(false),
     m_startupFlags(CREATE_NEW_CONSOLE|CREATE_SUSPENDED),
+    m_isStartedAsHidden(false),
     m_isStartedAsPaused(true) {
     m_stdHandles[KCW_STDIN_HANDLE] = 0;
     m_stdHandles[KCW_STDOUT_HANDLE] = 0;
@@ -79,8 +82,8 @@ bool KcwProcess::start() {
     DWORD dwStartupFlags = m_startupFlags;
 //    DWORD dwStartupFlags = CREATE_SUSPENDED;
 //  | DETACHED_PROCESS; // the detached process won't work
-//    siWow.dwFlags       |= STARTF_USESHOWWINDOW;
-//    siWow.wShowWindow   = SW_HIDE;
+    siWow.dwFlags       |= STARTF_USESHOWWINDOW;
+    siWow.wShowWindow   = (m_isStartedAsHidden) ? SW_HIDE : SW_SHOW;
 
     PROCESS_INFORMATION procInfo;
     if (!::CreateProcessA(
@@ -147,6 +150,14 @@ int KcwProcess::pid() const {
 
 std::string KcwProcess::cmd() const {
     return m_cmd;
+}
+
+void KcwProcess::setStartupAsHidden(bool x) {
+    m_isStartedAsHidden = x;
+}
+
+bool KcwProcess::startupAsHidden() const {
+    return m_isStartedAsHidden;
 }
 
 int KcwProcess::exitCode() const {

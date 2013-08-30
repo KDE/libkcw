@@ -118,6 +118,9 @@ class KcwProcess {
          */
         void setCmd(const std::string& _cmd);
 
+        void setStartupAsHidden(bool x = true);
+        bool startupAsHidden() const;
+
         /**
          * @return the exitcode of the process after it finished
          */
@@ -130,6 +133,7 @@ class KcwProcess {
         int                 m_startupFlags;
         bool                m_isRunning;
         bool                m_isStartedAsPaused;
+        bool                m_isStartedAsHidden;
 };
 
 
