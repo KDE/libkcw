@@ -85,6 +85,10 @@ bool KcwProcess::start() {
     siWow.dwFlags       |= STARTF_USESHOWWINDOW;
     siWow.wShowWindow   = (m_isStartedAsHidden) ? SW_HIDE : SW_SHOW;
 
+
+    WCHAR* iwd = NULL;
+    if(m_initialWorkingDirectory.size() > 0) iwd = const_cast<WCHAR*>(m_initialWorkingDirectory.c_str());
+
     PROCESS_INFORMATION procInfo;
     if (!::CreateProcessW(
             NULL,
@@ -94,7 +98,7 @@ bool KcwProcess::start() {
             FALSE,
             dwStartupFlags,
             NULL,
-            NULL,
+            iwd,
             &siWow,
             &procInfo))
     {
@@ -168,6 +172,15 @@ int KcwProcess::exitCode() const {
         return result;
     }
 }
+
+void KcwProcess::setInitialWorkingDirectory(const std::wstring& iwd) {
+    m_initialWorkingDirectory = iwd;
+}
+
+std::wstring KcwProcess::initialWorkingDirectory() const {
+    return m_initialWorkingDirectory;
+}
+
 
 void KcwProcess::quit() {
     TerminateProcess(m_threadRep.processHandle(), 0);

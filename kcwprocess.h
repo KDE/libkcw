@@ -126,10 +126,21 @@ class KcwProcess {
          */
         int exitCode() const;
 
+        /**
+         * set the process's initial working directory
+         */
+        void setInitialWorkingDirectory(const std::wstring& iwd);
+
+        /**
+         * @return the initial working directory for this process
+         */
+        std::wstring initialWorkingDirectory() const;
+
     private:
         KcwThreadRep        m_threadRep;
         HANDLE              m_stdHandles[3];
         std::wstring        m_cmd;
+        std::wstring        m_initialWorkingDirectory;
         int                 m_startupFlags;
         bool                m_isRunning;
         bool                m_isStartedAsPaused;
