@@ -1,6 +1,7 @@
 #include "kcwnotifier.h"
 
 #include <string>
+#include <locale>
 #include <windows.h>
 #include "kcwdebug.h"
 #include "kcwprocess.h"
@@ -72,7 +73,12 @@ int main(int argc, char**argv) {
 // testing access another process
     KcwNotifier notifier3(L"remotekcwnotifiertest");
     KcwTestAssert(notifier3.open() == 0, L"could not create notifier event")
-    KcwProcess proc(std::string(argv[0]) + " runcheck1");
+
+    std::string arg0 = argv[0];
+    wchar_t* w = new wchar_t[arg0.size() + 1];
+    std::locale loc;
+    std::use_facet< std::ctype<wchar_t> >(loc).widen (arg0.data(), arg0.data() + arg0.size() + 1, w);
+    KcwProcess proc(std::wstring(w) + L" runcheck1");
     KcwTestAssert(proc.start(), L"couldn't start process in paused mode")
     KcwTestAssert(proc.resume(), L"couldn't resume process from paused mode")
     ret = WaitForSingleObject(notifier3.handle(), 1000);

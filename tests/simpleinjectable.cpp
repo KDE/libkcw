@@ -44,7 +44,7 @@ DWORD HookService(void *val) {
 
 int startConsole() {
     KcwEventLoop loop;
-    KcwProcess proc("cmd.exe");
+    KcwProcess proc(L"cmd.exe");
     KcwInjector injector;
     HANDLE timer = CreateWaitableTimer(NULL, FALSE, NULL);
     int retval;

@@ -19,7 +19,7 @@ std::wstring getModulePath(HMODULE hModule) {
 
 int main(int argc, char**argv) {
     KcwApp app;
-    KcwProcess proc("cmd.exe");
+    KcwProcess proc(L"cmd.exe");
     KcwInjector injector, injector2;
     KcwSharedMemory<int> shmem;
     HANDLE timer = CreateWaitableTimer(NULL, FALSE, NULL);

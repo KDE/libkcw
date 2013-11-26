@@ -1,7 +1,7 @@
 #include "kcwprocess.h"
 #include "kcwdebug.h"
 
-KcwProcess::KcwProcess(std::string execPath)
+KcwProcess::KcwProcess(std::wstring execPath)
   : m_cmd(execPath),
     m_isRunning(false),
     m_isStartedAsHidden(false),
@@ -47,7 +47,7 @@ void KcwProcess::setIsStartedAsPaused(bool isPaused) {
     m_isStartedAsPaused = isPaused;
 }
 
-void KcwProcess::setCmd(const std::string& _cmd) {
+void KcwProcess::setCmd(const std::wstring& _cmd) {
     m_cmd = _cmd;
 }
 
@@ -56,11 +56,11 @@ void KcwProcess::setStartupFlags(int stFlags) {
 }
 
 bool KcwProcess::start() {
-    STARTUPINFOA siWow;
+    STARTUPINFOW siWow;
 
-    ::ZeroMemory(&siWow, sizeof(STARTUPINFO));
+    ::ZeroMemory(&siWow, sizeof(STARTUPINFOW));
 
-    siWow.cb            = sizeof(STARTUPINFO);
+    siWow.cb            = sizeof(STARTUPINFOW);
     if(m_stdHandles[KCW_STDIN_HANDLE]) {
         siWow.hStdInput = m_stdHandles[KCW_STDIN_HANDLE];
         siWow.dwFlags   = STARTF_USESTDHANDLES;
@@ -86,9 +86,9 @@ bool KcwProcess::start() {
     siWow.wShowWindow   = (m_isStartedAsHidden) ? SW_HIDE : SW_SHOW;
 
     PROCESS_INFORMATION procInfo;
-    if (!::CreateProcessA(
+    if (!::CreateProcessW(
             NULL,
-            const_cast<char*>(m_cmd.c_str()),
+            const_cast<WCHAR*>(m_cmd.c_str()),
             NULL,
             NULL,
             FALSE,
@@ -111,7 +111,7 @@ bool KcwProcess::start() {
             lpMsgBuf,
             0, NULL);
 
-        OutputDebugString(lpMsgBuf);
+        OutputDebugStringW(lpMsgBuf);
         LocalFree(lpMsgBuf);
         return false;
     }
@@ -148,7 +148,7 @@ int KcwProcess::pid() const {
     return GetProcessId(m_threadRep.processHandle());
 }
 
-std::string KcwProcess::cmd() const {
+std::wstring KcwProcess::cmd() const {
     return m_cmd;
 }
 

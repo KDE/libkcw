@@ -21,7 +21,7 @@ class KcwProcess {
         /**
         * start a new process using the executable @p execPath.
         */
-        KcwProcess(std::string execPath);
+        KcwProcess(std::wstring execPath);
 
         /**
         * wrap an already running process with @p pid.
@@ -111,12 +111,12 @@ class KcwProcess {
         /**
         * @return the command to be executed.
         */
-        std::string cmd() const;
+        std::wstring cmd() const;
 
         /**
          * sets the command to execute.
          */
-        void setCmd(const std::string& _cmd);
+        void setCmd(const std::wstring& _cmd);
 
         void setStartupAsHidden(bool x = true);
         bool startupAsHidden() const;
@@ -129,7 +129,7 @@ class KcwProcess {
     private:
         KcwThreadRep        m_threadRep;
         HANDLE              m_stdHandles[3];
-        std::string         m_cmd;
+        std::wstring        m_cmd;
         int                 m_startupFlags;
         bool                m_isRunning;
         bool                m_isStartedAsPaused;
