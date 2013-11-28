@@ -22,8 +22,13 @@ int main(int argc, char**argv) {
     KcwProcess proc(L"cmd.exe");
     KcwInjector injector, injector2;
     KcwSharedMemory<int> shmem;
+    KcwSharedMemory<WCHAR> shmemvar;
     HANDLE timer = CreateWaitableTimer(NULL, FALSE, NULL);
     int retval;
+    KcwProcess::KcwProcessEnvironment env = KcwProcess::KcwProcessEnvironment::getCurrentEnvironment();
+
+    env[L"MYTEST"] = L"myblub__";
+    proc.setStartupEnvironment(env);
 
     injector2.setInjectionDll(getModulePath(NULL) + L"\\commoninjector.dll");
     KcwTestAssert((injector2.inject() == false), L"KcwInjector didn't fail when no process was set");
@@ -35,6 +40,7 @@ int main(int argc, char**argv) {
 
     shmem.create(L"injectortest");
     *shmem = 1;
+    shmemvar.create(L"injectortestvar", 9);
     injector.setDestinationProcess(proc.process(), proc.thread());
     injector.setInjectionDll(getModulePath(NULL) + L"\\commoninjector.dll");
     if(!injector.inject()) {
@@ -50,6 +56,10 @@ int main(int argc, char**argv) {
     proc.resume();
     retval = app.exec();
     KcwTestAssert((*shmem == 2), L"injected dll didn't run");
-    
+
+    WCHAR buf[9];
+    memcpy(buf, shmemvar.data(), sizeof(WCHAR) * 9);
+    KcwTestAssert((wcscmp(buf, L"myblub__") == 0), L"envvar couldn't be found in process");
+
     return retval;
 }
