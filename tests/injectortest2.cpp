@@ -29,6 +29,6 @@ int main(int argc, char**argv) {
 //     SetWaitableTimer(timer, &li, 0, NULL, NULL, FALSE);
 //     app.addCallback(timer, CB(KcwApp::quit));
 //     retval = app.exec();
-    startConsole();
+    retval = startConsole();
     return retval;
 }
