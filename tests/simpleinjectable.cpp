@@ -63,7 +63,7 @@ int startConsole() {
 
     loop.addCallback(proc.process());
     LARGE_INTEGER li;
-    li.QuadPart = -30 * 1000000LL; // 2 seconds
+    li.QuadPart = -30 * 1000000LL; // 3 seconds
     SetWaitableTimer(timer, &li, 0, NULL, NULL, FALSE);
     loop.addCallback(timer, CB(KcwProcess::quit), &proc);
 
