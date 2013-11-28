@@ -13,6 +13,9 @@ set(KCW_PATCH_VERSION 0)
 
 set(KCW_VERSION "${KCW_MAJOR_VERSION}.${KCW_MINOR_VERSION}.${KCW_PATCH_VERSION}")
 
+if(MSVC)
+    add_definitions(/Zc:wchar_t-)
+endif()
 configure_file(cmake/KcwConfigVersion.cmake.in
   "${CMAKE_CURRENT_BINARY_DIR}/KcwConfigVersion.cmake" @ONLY)
 
