@@ -12,6 +12,7 @@
 
 #include <windows.h>
 #include <string>
+#include <map>
 
 #include "kcwthreadrep.h"
 #include "kcweventloop.h"
@@ -136,11 +137,26 @@ class KcwProcess {
          */
         std::wstring initialWorkingDirectory() const;
 
+
+
+        struct KcwProcessEnvironment : public std::map<std::wstring, std::wstring> {
+            static KcwProcessEnvironment getCurrentEnvironment();
+            /*
+            static KcwProcessEnvironment getDefaultEnvironment();
+             */
+        };
+        /**
+         * Set the environment that is used when the process starts
+         */
+        void setStartupEnvironment(KcwProcessEnvironment env);
+        void addEnvironmentEntry(std::wstring var, std::wstring value);
+
     private:
         KcwThreadRep        m_threadRep;
         HANDLE              m_stdHandles[3];
         std::wstring        m_cmd;
         std::wstring        m_initialWorkingDirectory;
+        KcwProcessEnvironment   m_environment;
         int                 m_startupFlags;
         bool                m_isRunning;
         bool                m_isStartedAsPaused;
