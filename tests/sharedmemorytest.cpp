@@ -58,7 +58,7 @@ int main(int argc, char ** argv) {
     test3.create(L"sharedmemorytest-resize", lowerSize);
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int<> dis(0, 2 << 31);
+    std::uniform_int_distribution<> dis(0, 2 << 31);
     int *array = new int[higherSize];
     for(int i = 0; i < higherSize; i++) array[i] = dis(gen);
     memcpy(test3.data(), array, lowerSize * sizeof(int));
