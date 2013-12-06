@@ -216,6 +216,10 @@ void KcwProcess::setStartupEnvironment(KcwProcessEnvironment env) {
     m_environment = env;
 }
 
+KcwProcess::KcwProcessEnvironment KcwProcess::getStartupEnvironment() const {
+    return m_environment;
+}
+
 KcwProcess::KcwProcessEnvironment KcwProcess::KcwProcessEnvironment::getCurrentEnvironment() {
     WCHAR* envBlock = GetEnvironmentStrings();
     KcwProcessEnvironment ret;

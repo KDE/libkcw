@@ -149,6 +149,7 @@ class KcwProcess {
          * Set the environment that is used when the process starts
          */
         void setStartupEnvironment(KcwProcessEnvironment env);
+        KcwProcessEnvironment getStartupEnvironment() const;
         void addEnvironmentEntry(std::wstring var, std::wstring value);
 
     private:
