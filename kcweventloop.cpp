@@ -151,6 +151,7 @@ int KcwEventLoop::exec() {
     };
 
     HANDLE *begin = &locHandles.front();
+    MSG msg;
     while ((dwWaitRes = ::WaitForMultipleObjects(handleSize, begin, FALSE, m_refreshInterval)) != WAIT_OBJECT_0) {
         if(dwWaitRes == WAIT_FAILED) {
             WCHAR lpMsgBuf[1024];
@@ -167,6 +168,10 @@ int KcwEventLoop::exec() {
 
             KcwDebug() << "eventLoop wait failed!" << endl << "pid:" << dwProcessId << "#handles:" << locHandles.size() << "result:" << dwWaitRes << (const wchar_t*)lpMsgBuf << endl;
             break;
+        }
+
+        if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) != 0) {
+            DispatchMessage(&msg);
         }
 
         unsigned i = 1;
