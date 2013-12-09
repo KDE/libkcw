@@ -4,6 +4,7 @@
 #include <string>
 #include <cstdio>
 #include <windows.h>
+#include <cassert>
 
 /**
 * @author Patrick Spendrin
@@ -103,6 +104,7 @@ template<typename T>
 KcwSharedMemory<T>::KcwSharedMemory()
 : m_name(L""),
   m_size(0),
+  m_sharedMem(NULL),
   m_sharedMemHandle(NULL) {
 }
 
@@ -117,6 +119,7 @@ template<typename T>
 KcwSharedMemory<T>::KcwSharedMemory(const std::wstring& strName, int size, bool bCreate)
 : m_name(strName),
   m_size(size),
+  m_sharedMem(NULL),
   m_sharedMemHandle(NULL) {
     if (bCreate)
     {
@@ -238,32 +241,44 @@ int KcwSharedMemory<T>::resize(int size) {
 
 template<typename T>
 T* KcwSharedMemory<T>::operator->() const {
+    assert(m_size);
+    assert(m_sharedMem);
     return m_sharedMem + sizeof(m_size);
 }
 
 template<typename T>
 T& KcwSharedMemory<T>::operator*() const {
+    assert(m_size);
+    assert(m_sharedMem);
     return *(m_sharedMem + sizeof(m_size));
 }
 
 template<typename T>
 KcwSharedMemory<T>& KcwSharedMemory<T>::operator=(const T& val) {
+    assert(m_size);
+    assert(m_sharedMem);
     *(m_sharedMem + sizeof(m_size)) = val;
     return *this;
 }
 
 template<typename T>
 T& KcwSharedMemory<T>::operator[](size_t index) const {
+    assert(m_size);
+    assert(m_sharedMem);
     return *(m_sharedMem + sizeof(m_size) + index * sizeof(T));
 }
 
 template<typename T>
 T* KcwSharedMemory<T>::data() {
+    assert(m_size);
+    assert(m_sharedMem);
     return m_sharedMem + sizeof(m_size);
 }
 
 template<typename T>
 T* const KcwSharedMemory<T>::data() const {
+    assert(m_size);
+    assert(m_sharedMem);
     return m_sharedMem + sizeof(m_size);
 }
 
