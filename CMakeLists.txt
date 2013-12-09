@@ -31,6 +31,7 @@ endif()
 
 set(kcw_HDRS
     kcwapp.h
+    kcwautomutex.h
     kcwdebug.h
     kcweventloop.h
     kcwinjector.h
