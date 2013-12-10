@@ -38,7 +38,7 @@ bool KcwInjector::inject() {
     fnLoadLibrary = (LPTHREAD_START_ROUTINE)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "LoadLibraryW");
 
     WriteProcessMemory(m_destProcess, mem, m_dllPath.c_str(), (m_dllPath.length() + 1)*sizeof(wchar_t), NULL);
-    HANDLE remoteThread = CreateRemoteThread(m_destProcess, NULL, NULL, fnLoadLibrary, mem, NULL, NULL);
+    HANDLE remoteThread = CreateRemoteThread(m_destProcess, NULL, 0, fnLoadLibrary, mem, 0, NULL);
     DWORD retCode = WaitForSingleObject(remoteThread, INFINITE);
     VirtualFreeEx(m_destProcess, mem, 0, MEM_RELEASE);
     if(retCode != WAIT_OBJECT_0) {
